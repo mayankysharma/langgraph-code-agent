@@ -33,9 +33,9 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 3. Install dependencies:
 ```bash
-pip install langgraph langchain-groq langchain-core python-dotenv
+pip install -r requirements.txt
 ```
-
+`
 4. Set up environment variables:
 Create a `.env` file in the project root:
 ```
