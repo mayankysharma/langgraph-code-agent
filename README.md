@@ -98,4 +98,3 @@ For a request like "Create a function to calculate the factorial of a number", t
 
 - Add checks for checking generated code against linting, unit test cases, security and others.
 - Add ability to do code completion and debugging for user
-- Add requirements.txt file
