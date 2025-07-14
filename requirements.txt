@@ -1,7 +1,8 @@
+judgeval==0.0.54
 langchain_core==0.3.68
 langchain_groq==0.3.6
 langgraph==0.5.2
-python-dotenv==1.1.1    
+python-dotenv==1.1.1
 black
 pylint
 mypy

@@ -11,10 +11,12 @@ from langgraph.graph import StateGraph, END
 from typing import TypedDict, Sequence, Dict, Any, Optional, List, Union
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain_groq import ChatGroq
-
+from judgeval.common.tracer import Tracer
+from judgeval.integrations.langgraph import JudgevalCallbackHandler
 # --- Load environment variables ---
 load_dotenv()
-
+judgment = Tracer(project_name="your-project-name")
+handler = JudgevalCallbackHandler(judgment)
 chat_model = ChatGroq(
     model="llama-3.1-8b-instant",
     api_key=os.environ.get("GROQ_API_KEY"),
@@ -331,7 +333,7 @@ workflow.add_edge("save_code", END)
 graph = workflow.compile()
 
 
-def code_generation_agent(user_request: str):
+def code_generation_agent(user_request: str,config_with_callbacks: Dict[str, Any]):
     """
     This function initializes the state, generates code, and saves the code.
     """
@@ -346,15 +348,15 @@ def code_generation_agent(user_request: str):
         error_message=None,
         retry_count=0
     )
-    final_state = graph.invoke(state)
+    final_state = graph.invoke(state,config=config_with_callbacks)
     return final_state
 
 
 if __name__ == "__main__":
     print(f"Hi, I am your personal code generation agent. I will generate python code for you based on your request!")
     user_request = input("Enter your request: ")
-    
-    final_state = code_generation_agent(user_request)
+    config_with_callbacks = {"callbacks": [handler]}
+    final_state = code_generation_agent(user_request, config_with_callbacks)
     
     print("\n--- Agent Workflow Completed ---")
     print(f"Debug - output_file_path: {final_state.get('output_file_path')}")

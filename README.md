@@ -1,6 +1,6 @@
 # LangGraph Code Agent
 
-A streamlined code generation agent built with LangGraph and Groq. This agent analyzes user requests, generates Python code, performs quality assurance checks, and automatically saves the results to a file.
+A streamlined code generation agent built with LangGraph and Groq. This LangGraph agent is a synchronous graph. The agent analyzes user requests, generates Python code, performs quality assurance checks, and automatically saves the results to a file and traces all workflow steps to the Judgeval dashboard for monitoring and evaluation.
 
 ## Features
 
@@ -10,6 +10,7 @@ A streamlined code generation agent built with LangGraph and Groq. This agent an
 - **Retry Logic**: Automatically retries code generation up to 3 times if QA issues are detected
 - **Automatic File Saving**: Saves the generated code to a `generated_code/` directory with sanitized filenames
 - **Interactive Interface**: Simple command-line interface for user input
+- **Judgeval Tracing & Evaluation**: Full workflow tracing and evaluation with Judgeval dashboard integration
 
 ## Architecture
 
@@ -43,6 +44,7 @@ pip install -r requirements.txt
 Create a `.env` file in the project root:
 ```
 GROQ_API_KEY=your_groq_api_key_here
+JUDGMENT_API_KEY=your_judgeval_api_key_here
 ```
 
 ## Usage
@@ -54,6 +56,8 @@ python main.py
 ```
 
 The agent will prompt you to enter your request, then generate and save the code.
+
+If you have set up your Judgeval API key and project, traces and metrics will appear in your Judgeval dashboard automatically.
 
 ### Example Usage
 
@@ -127,5 +131,27 @@ Final code saved to: generated_code/factorial-function.py
 - `black`: Code formatting
 - `pylint`: Static analysis and linting
 - `mypy`: Type checking
+- `judgeval`: Post-building library for AI agents that comes with everything you need to trace and test your agents with evals.
+
+## Tracing & Evaluation (Judgeval Integration)
+
+- **Judgeval Tracing**: All agent workflow steps, tool calls, and LLM generations are automatically traced and sent to the [Judgeval](https://dashboard.judgmentlabs.ai/) dashboard for monitoring and evaluation.
+- **Project Name**: The project name in your code must match your Judgeval dashboard project.
+- **API Key**: Requires a valid `JUDGMENT_API_KEY` environment variable for Judgeval integration.
+
+**Note:** The `project_name` in your code (see `main.py`) must match the project name in your Judgeval dashboard for traces to appear.
+
+## Troubleshooting
+
+- **No traces in Judgeval dashboard?**
+  - Ensure your `JUDGMENT_API_KEY` is set and valid.
+  - The `project_name` in your code must match your Judgeval dashboard project.
+  - Update Judgeval to the latest version: `pip install --upgrade judgeval`
+  - Check for errors in the console output related to Judgeval initialization or API key authorization.
+
+- **Judgeval errors like "Unauthorized request" or "Invalid request format"?**
+  - Double-check your API key and project name.
+  - Make sure your environment variables are loaded before running the script.
+
 
 
