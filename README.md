@@ -1,3 +1,4 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 # LangGraph Code Agent
 
 A streamlined code generation agent built with LangGraph and Groq. This LangGraph agent is a synchronous graph. The agent analyzes user requests, generates Python code, performs quality assurance checks, and automatically saves the results to a file and traces all workflow steps to the Judgeval dashboard for monitoring and evaluation.
