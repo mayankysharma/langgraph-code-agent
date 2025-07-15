@@ -6,16 +6,22 @@ import re
 import tempfile
 import subprocess
 import sys
+import time
 from dotenv import load_dotenv
 from langgraph.graph import StateGraph, END
-from typing import TypedDict, Sequence, Dict, Any, Optional, List, Union
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from typing import TypedDict, Dict, Any, Optional, List
+from langchain_core.messages import HumanMessage
 from langchain_groq import ChatGroq
 from judgeval.common.tracer import Tracer
 from judgeval.integrations.langgraph import JudgevalCallbackHandler
+from judgeval.scorers import AnswerRelevancyScorer
+from judgeval import JudgmentClient
+from judgeval.data import Example
+
 # --- Load environment variables ---
 load_dotenv()
 judgment = Tracer(project_name="your-project-name")
+client = JudgmentClient()
 handler = JudgevalCallbackHandler(judgment)
 chat_model = ChatGroq(
     model="llama-3.1-8b-instant",
@@ -353,6 +359,11 @@ def code_generation_agent(user_request: str,config_with_callbacks: Dict[str, Any
 
 
 if __name__ == "__main__":
+    """
+    Main entry point for the LangGraph Code Agent.
+    - Tracing: All workflow steps, tool calls, and LLM generations are automatically traced and sent to the Judgeval dashboard via JudgevalCallbackHandler.
+    - Evaluation: After code generation, the output is automatically evaluated using Judgeval's AnswerRelevancyScorer and results are logged to the dashboard.
+    """
     print(f"Hi, I am your personal code generation agent. I will generate python code for you based on your request!")
     user_request = input("Enter your request: ")
     config_with_callbacks = {"callbacks": [handler]}
@@ -371,3 +382,27 @@ if __name__ == "__main__":
         if final_state.get('qa_report'):
             print(f"Full QA Report:\n{final_state['qa_report']}")
     print("\nThank you for using my service. Goodbye!")
+
+    # --- Tracing and Evaluation ---
+    # Tracing is handled automatically via JudgevalCallbackHandler in the workflow.
+    # Evaluation: After code generation, the output is evaluated for relevance using AnswerRelevancyScorer.
+    if not user_request:
+        user_request_eval = "Create a function to calculate the factorial of a number"
+        config_with_callbacks_eval = {"callbacks": [handler]}
+        final_state_eval = code_generation_agent(user_request_eval, config_with_callbacks_eval)
+        actual_output = final_state_eval.get("generated_code", "")
+    else:
+        user_request_eval = user_request
+        config_with_callbacks_eval = {"callbacks": [handler]}
+        actual_output = final_state.get("generated_code", "")
+    example = Example(
+        input={"user_request": user_request_eval},
+        actual_output=actual_output
+    )
+    client.run_evaluation(
+        examples=[example],
+        scorers=[AnswerRelevancyScorer(threshold=0.5)],
+        project_name="your-project-name",
+        eval_run_name=f"code_agent_eval_{int(time.time())}",
+        override=True
+    )
